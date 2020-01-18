@@ -34,7 +34,7 @@ var (
 )
 
 //TotalFans 所有line@账号的粉丝数
-func TotalFans() int {
+func TotalFans(allLine map[string]string) int {
 	var sumFans int
 	fansChan = make(chan int)
 	defer close(fansChan)
@@ -74,8 +74,8 @@ func TotalFans() int {
 //	return sumFans
 //}
 
-//GetFans 获取指定line@账号的粉丝数
-func GetFans(counter []string) int {
+//GetFans 获取指定line@账号的粉丝数,并发方式
+func GetFans(account []string) int {
 	var sumFans int
 	fansChan = make(chan int)
 	defer close(fansChan)
@@ -90,11 +90,9 @@ func GetFans(counter []string) int {
 		}
 	}()
 
-	for _, v := range counter {
+	for _, v := range account {
 		go Fans(v)
 	}
-
-	time.Sleep(3 * time.Second)
 
 	if sumFans == 0 {
 		fmt.Println("查询超时！！")
@@ -103,7 +101,7 @@ func GetFans(counter []string) int {
 	return sumFans
 }
 
-//Fans 获取line@账号的粉丝数
+//Fans 获取line@账号的粉丝数，不返回，传入通道
 func Fans(account string) {
 	defer wg.Done()
 	account = url.QueryEscape(account)
@@ -135,36 +133,37 @@ func Fans(account string) {
 	fansChan <- fans
 }
 
-//func FansCG(account string) int{
-//	//defer wg.Done()
-//	account = url.QueryEscape(account)
-//	var fans int
-//	webURL := "https://social-plugins.line.me/widget/friend?lineId=" + account + "&count=true&lang=en&origin=https://www." + randString(5) + ".html&title=" + randString(5)
-//	res, err := http.Get(webURL)
-//	if err != nil || res.StatusCode != 200 {
-//		log.Fatal("无法访问：", webURL)
-//	}
-//	defer res.Body.Close()
-//
-//	//加载HTML
-//	doc, e := goquery.NewDocumentFromReader(res.Body)
-//	if e != nil {
-//		log.Fatal(e)
-//	}
-//	doc.Find(".btnWrap").Find(".bubble").Find(".num").Each(
-//		func(i int, s *goquery.Selection) {
-//			res, ok := s.Attr("title")
-//			if !ok {
-//				log.Fatal("查找不到粉丝数量！")
-//			}
-//			fans, err = strconv.Atoi(res)
-//			if err != nil {
-//				log.Fatal("字符串类型转化错误")
-//			}
-//		})
-//	return fans
-//	//fansChan <- fans
-//}
+//FansCount @账号的粉丝数，并返回
+func FansCount(account string) int {
+	defer wg.Done()
+	account = url.QueryEscape(account)
+	var fans int
+	webURL := "https://social-plugins.line.me/widget/friend?lineId=" + account + "&count=true&lang=en&origin=https://www." + randString(5) + ".html&title=" + randString(5)
+	res, err := http.Get(webURL)
+	if err != nil || res.StatusCode != 200 {
+		log.Fatal("无法访问：", webURL)
+	}
+	defer res.Body.Close()
+
+	//加载HTML
+	doc, e := goquery.NewDocumentFromReader(res.Body)
+	if e != nil {
+		log.Fatal(e)
+	}
+	doc.Find(".btnWrap").Find(".bubble").Find(".num").Each(
+		func(i int, s *goquery.Selection) {
+			res, ok := s.Attr("title")
+			if !ok {
+				log.Fatal("查找不到粉丝数量！")
+			}
+			fans, err = strconv.Atoi(res)
+			if err != nil {
+				log.Fatal("字符串类型转化错误")
+			}
+		})
+
+	return fans
+}
 
 //LineInfo 通过通道获取line账号信息【备用】
 //func LineInfo() {
