@@ -18,6 +18,26 @@ type Line struct {
 	Date    string `bson:"date"`
 }
 
+//Popin 账号结构
+type Popin struct {
+	CampaignID string `bson:"campaignID"`
+	Totalmoney int    `bson:"totalmoney"`
+	Status     int    `bson:"status"`
+	Date       string `bson:"date"`
+}
+
+//Project 项目结构
+type Project struct {
+	Name       string
+	Campaignid []string
+	Lineid     []string
+	Account    string
+}
+
+//ADdata 数据结构
+type ADdata struct {
+}
+
 func demo() {
 	p1 := Line{
 		// ID:      1,
@@ -94,8 +114,18 @@ func (operater *Operater) ConnMgoDB(host string, dbname string, colle string) er
 	return nil
 }
 
-//InsertMgoDB  插入函数
+//InsertMgoDB  插入函数针对Line
 func (operater *Operater) InsertMgoDB(p *Line) error {
+	err := operater.collection.Insert(p)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	return nil
+}
+
+//InsertMgoDBP  插入函数针对POPin
+func (operater *Operater) InsertMgoDBP(p *Popin) error {
 	err := operater.collection.Insert(p)
 	if err != nil {
 		fmt.Println(err)
@@ -109,13 +139,13 @@ func (operater *Operater) GetData(key string, value string) (Line, error) {
 	result := Line{}
 	err := operater.collection.Find(bson.M{key: value}).One(&result)
 	if err != nil {
-		fmt.Println(err)
+		// fmt.Println(err)
 		return result, err
 	}
 	return result, nil
 }
 
-//GetDataByID 根据ID查询数据
+//GetDataByID 根据ID查询line数据
 func (operater *Operater) GetDataByID(id bson.ObjectId) (Line, error) {
 	line := Line{}
 	err := operater.collection.FindId(id).One(&line) //一定要传入line的地址，即加&标识符
@@ -124,6 +154,17 @@ func (operater *Operater) GetDataByID(id bson.ObjectId) (Line, error) {
 		return line, err
 	}
 	return line, nil
+}
+
+//GetProjectByID 根据ID查询Project数据
+func (operater *Operater) GetProjectByID(id bson.ObjectId) (Project, error) {
+	project := Project{}
+	err := operater.collection.FindId(id).One(&project)
+	if err != nil {
+		fmt.Println(err)
+		return project, err
+	}
+	return project, nil
 }
 
 //UpdateFans 更新函数,根据账号account修改粉丝数fans
@@ -139,6 +180,16 @@ func (operater *Operater) UpdateFans(account string, fans int) error {
 //RemoveAcc 删除函数，传入账号删除指定账号
 func (operater *Operater) RemoveAcc(account string) error {
 	_, err := operater.collection.RemoveAll(bson.M{"account": account})
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	return nil
+}
+
+//InsertProject  插入函数针对Line
+func (operater *Operater) InsertProject(p *Project) error {
+	err := operater.collection.Insert(p)
 	if err != nil {
 		fmt.Println(err)
 		return err

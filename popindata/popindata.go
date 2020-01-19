@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 var (
@@ -27,6 +28,7 @@ var (
 
 	whiteID     string = "Self_White"
 	whiteLineID string = "self_white_line"
+	wg          sync.WaitGroup
 )
 
 type (
@@ -70,6 +72,12 @@ func WhiteMoneyDIY(idSlice []string) int {
 	return money
 }
 
+//GetWhiteMoney 获取wihte活动消耗，传入string
+func GetWhiteMoney(campaignid string) int {
+	money := GetMoney(cookieWhite, whiteID, campaignid)
+	return money
+}
+
 //WhiteLineMoneyDIY 获取whiteLineID手动指定活动ID的总消耗
 func WhiteLineMoneyDIY(idSlice []string) int {
 	var money int
@@ -78,6 +86,12 @@ func WhiteLineMoneyDIY(idSlice []string) int {
 		fmt.Println(i, ":", j)
 		money += j
 	}
+	return money
+}
+
+//GetLineMoney 获取whiteline活动消耗，传入string
+func GetLineMoney(campaignid string) int {
+	money := GetMoney(cookieWhiteLine, whiteLineID, campaignid)
 	return money
 }
 

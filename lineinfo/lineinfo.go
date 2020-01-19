@@ -135,7 +135,6 @@ func Fans(account string) {
 
 //FansCount @账号的粉丝数，并返回
 func FansCount(account string) int {
-	defer wg.Done()
 	account = url.QueryEscape(account)
 	var fans int
 	webURL := "https://social-plugins.line.me/widget/friend?lineId=" + account + "&count=true&lang=en&origin=https://www." + randString(5) + ".html&title=" + randString(5)
